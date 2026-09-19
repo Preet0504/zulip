@@ -46,6 +46,14 @@ class MessageRecapReadyEvent(BaseEvent):
     conversations: list[RecapConversationRef]
 
 
+class TopicDriftSuggestionEvent(BaseEvent):
+    type: Literal["topic_drift_suggestion"] = "topic_drift_suggestion"
+    message_id: int
+    stream_id: int
+    topic_name: str
+    suggested_topic_name: str
+
+
 class Attachment(BaseModel):
     id: int
     name: str

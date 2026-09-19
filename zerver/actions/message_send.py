@@ -1116,6 +1116,8 @@ def do_send_messages(
     # * Updating the `first_message_id` field for streams without any message history.
     # * Implementing the Welcome Bot reply hack
     # * Adding links to the embed_links queue for open graph processing.
+    # * Adding channel messages to the topic_drift queue, to check whether
+    #   the conversation has drifted from its topic name.
     for send_request in send_message_requests:
         realm_id: int | None = None
         if send_request.message.is_channel_message:
@@ -1402,6 +1404,21 @@ def do_send_messages(
                 "urls": list(send_request.links_for_embed),
             }
             queue_event_on_commit("embed_links", event_data)
+
+        # Unlike embed_links above, this fires on every channel message
+        # rather than only ones with specific content, so it would
+        # otherwise make real LLM provider calls from any test in the
+        # suite that happens to send enough messages into one topic.
+        if send_request.message.is_channel_message and not settings.TEST_SUITE:
+            assert send_request.stream is not None
+            queue_event_on_commit(
+                "topic_drift",
+                {
+                    "message_id": send_request.message.id,
+                    "stream_id": send_request.stream.id,
+                    "topic_name": send_request.message.topic_name(),
+                },
+            )
 
         # Check if this is a 1:1 DM between a user and the Welcome Bot,
         # in which case we may want to send an automated response.
