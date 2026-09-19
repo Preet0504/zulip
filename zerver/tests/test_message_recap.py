@@ -2,9 +2,9 @@ from datetime import datetime, timezone
 from unittest import mock
 
 import time_machine
-from django.conf import settings
 from openai.resources.chat.completions import Completions
 from openai.types.chat import ChatCompletion
+from typing_extensions import override
 
 from zerver.actions.message_recap import RecapConversation
 from zerver.lib.test_classes import ZulipTestCase
@@ -41,6 +41,7 @@ def fake_chat_completion(content: str) -> ChatCompletion:
 
 
 class MessageRecapViewTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user = self.example_user("hamlet")
@@ -72,6 +73,7 @@ class MessageRecapViewTestCase(ZulipTestCase):
 
 
 class MessageRecapWorkerTestCase(ZulipTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.user = self.example_user("hamlet")
@@ -87,9 +89,7 @@ class MessageRecapWorkerTestCase(ZulipTestCase):
 
     def test_empty_unread_sends_caught_up_event(self) -> None:
         worker = MessageRecapWorker()
-        with mock.patch(
-            "zerver.worker.message_recap.send_event_on_commit"
-        ) as mock_send_event:
+        with mock.patch("zerver.worker.message_recap.send_event_on_commit") as mock_send_event:
             worker.consume({"user_profile_id": self.user.id, "realm_id": self.user.realm_id})
         mock_send_event.assert_called_once()
         _, event, user_ids = mock_send_event.call_args[0]
@@ -108,7 +108,7 @@ class MessageRecapWorkerTestCase(ZulipTestCase):
         mock_create.assert_not_called()
         mock_send_event.assert_called_once()
         _, event, _ = mock_send_event.call_args[0]
-        self.assertEqual(len(event.conversations), 1)
+        self.assert_length(event.conversations, 1)
         self.assertIn("Message 0", event.recap_html)
 
     def test_summarizes_and_sends_event(self) -> None:
@@ -124,7 +124,7 @@ class MessageRecapWorkerTestCase(ZulipTestCase):
         mock_send_event.assert_called_once()
         _, event, user_ids = mock_send_event.call_args[0]
         self.assertEqual(list(user_ids), [self.user.id])
-        self.assertEqual(len(event.conversations), 1)
+        self.assert_length(event.conversations, 1)
         self.assertEqual(event.conversations[0].topic_name, "big topic")
         self.assertIn("A concise summary", event.recap_html)
 
@@ -176,7 +176,7 @@ class MessageRecapWorkerTestCase(ZulipTestCase):
         # One call per conversation (2), plus one merge call.
         self.assertEqual(mock_create.call_count, 3)
         _, event, _ = mock_send_event.call_args[0]
-        self.assertEqual(len(event.conversations), 2)
+        self.assert_length(event.conversations, 2)
 
 
 class RecapCacheKeyTestCase(ZulipTestCase):

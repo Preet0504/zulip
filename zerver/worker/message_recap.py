@@ -107,6 +107,11 @@ def _summarize_conversation(user_profile: UserProfile, conversation: RecapConver
         make_message(prompt),
     ]
 
+    # The view gates enqueueing this job on TOPIC_SUMMARIZATION_MODEL being
+    # configured, but that isn't visible to mypy across the queue boundary.
+    model = settings.TOPIC_SUMMARIZATION_MODEL
+    assert model is not None
+
     client = OpenAI(
         api_key=settings.TOPIC_SUMMARIZATION_API_KEY,
         base_url=settings.TOPIC_SUMMARIZATION_API_BASE,
@@ -115,7 +120,7 @@ def _summarize_conversation(user_profile: UserProfile, conversation: RecapConver
         max_retries=5,
     )
     response = client.chat.completions.create(
-        model=settings.TOPIC_SUMMARIZATION_MODEL,
+        model=model,
         messages=messages,
         **settings.TOPIC_SUMMARIZATION_PARAMETERS,
     )
@@ -146,6 +151,9 @@ def _merge_summaries(labeled_summaries: list[tuple[str, str]]) -> str:
     if len(labeled_summaries) == 1:
         return joined
 
+    model = settings.TOPIC_SUMMARIZATION_MODEL
+    assert model is not None
+
     client = OpenAI(
         api_key=settings.TOPIC_SUMMARIZATION_API_KEY,
         base_url=settings.TOPIC_SUMMARIZATION_API_BASE,
@@ -165,7 +173,7 @@ def _merge_summaries(labeled_summaries: list[tuple[str, str]]) -> str:
         ),
     ]
     response = client.chat.completions.create(
-        model=settings.TOPIC_SUMMARIZATION_MODEL,
+        model=model,
         messages=messages,
         **settings.TOPIC_SUMMARIZATION_PARAMETERS,
     )
@@ -190,13 +198,10 @@ class MessageRecapWorker(QueueProcessingWorker):
             # send *something* back. Log the real error for debugging, but
             # notify the client with a clear failure state rather than
             # letting the request hang forever.
-            logger.exception(
-                "Failed to generate message recap for user %s", user_profile.id
-            )
+            logger.exception("Failed to generate message recap for user %s", user_profile.id)
             failure_event = MessageRecapReadyEvent(
                 recap_html=(
-                    "<p>Sorry, something went wrong generating your recap. "
-                    "Please try again.</p>"
+                    "<p>Sorry, something went wrong generating your recap. Please try again.</p>"
                 ),
                 conversations=[],
             )
@@ -215,7 +220,9 @@ class MessageRecapWorker(QueueProcessingWorker):
             try:
                 if len(conversation.unread_message_ids) < MIN_MESSAGES_FOR_SUMMARY:
                     message_ids = sorted(conversation.unread_message_ids)
-                    user_message_flags = {message_id: [] for message_id in message_ids}
+                    user_message_flags: dict[int, list[str]] = {
+                        message_id: [] for message_id in message_ids
+                    }
                     messages = messages_for_ids(
                         message_ids=message_ids,
                         user_message_flags=user_message_flags,
@@ -246,7 +253,7 @@ class MessageRecapWorker(QueueProcessingWorker):
                 label = "Direct message"
             labeled_summaries.append((label, summary))
 
-            representative_message_id = sorted(conversation.unread_message_ids)[-1]
+            representative_message_id = max(conversation.unread_message_ids)
             conversation_refs.append(
                 RecapConversationRef(
                     conversation_type=conversation.conversation_type,
