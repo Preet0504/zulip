@@ -1,6 +1,6 @@
 # Implementation notes
 
-Demo video (both features): **[TODO: add link once recorded]**
+Demo video (both features): <https://drive.google.com/file/d/1akxgB-9KoGX8hXoQ3Jtt6yEFUn4uDjxH>
 
 ## Feature 1 — Message Recap
 
@@ -48,7 +48,7 @@ hash. `recap_ui.ts::show()` immediately shows a loading state and fires
 the POST; `server_events_dispatch.js` routes the resulting
 `message_recap_ready` event to `handle_recap_ready`, which swaps in the
 rendered recap and links. A client-side timeout shows a graceful error
-if no event arrives (e.g. the queue worker is down), since the backend
+if no event arrives (e.g., the queue worker is down), since the backend
 can't always guarantee it can report its own failure.
 
 ## Feature 2 — Topic Title Improver
@@ -71,7 +71,7 @@ pool.
 (`MESSAGES_BETWEEN_DRIFT_CHECKS`) triggers an actual LLM call — smaller
 counts return immediately. A memcached atomic add-if-absent
 (`_claim_drift_check`) deduplicates checks so a burst of messages landing
-close together (e.g. several replies at once) still only pays for one
+close together (e.g., several replies at once) still only pays for one
 call, not one per message. Reuses the existing `can_summarize_topics()`
 permission and `MAX_PER_USER_MONTHLY_AI_COST` budget, charged to the
 message's sender.
