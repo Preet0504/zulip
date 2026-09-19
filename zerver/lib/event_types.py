@@ -30,6 +30,22 @@ class AlertWordsEvent(BaseEvent):
     alert_words: list[str]
 
 
+class RecapConversationRef(BaseModel):
+    conversation_type: Literal["stream", "pm", "huddle"]
+    message_id: int
+    stream_id: int | None = None
+    stream_name: str | None = None
+    topic_name: str | None = None
+    other_user_id: int | None = None
+    user_ids_string: str | None = None
+
+
+class MessageRecapReadyEvent(BaseEvent):
+    type: Literal["message_recap_ready"] = "message_recap_ready"
+    recap_html: str
+    conversations: list[RecapConversationRef]
+
+
 class Attachment(BaseModel):
     id: int
     name: str

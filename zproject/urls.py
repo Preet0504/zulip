@@ -84,6 +84,7 @@ from zerver.views.message_flags import (
     update_message_flags,
     update_message_flags_for_narrow,
 )
+from zerver.views.message_recap import generate_messages_recap
 from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.message_summary import get_messages_summary
@@ -430,6 +431,14 @@ v1_api_and_json_patterns = [
         "messages/summary",
         GET=(
             get_messages_summary,
+            # Not documented since the API details haven't been finalized yet.
+            {"intentionally_undocumented"},
+        ),
+    ),
+    rest_path(
+        "messages/recap",
+        POST=(
+            generate_messages_recap,
             # Not documented since the API details haven't been finalized yet.
             {"intentionally_undocumented"},
         ),
