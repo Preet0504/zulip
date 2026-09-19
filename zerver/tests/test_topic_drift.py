@@ -5,7 +5,11 @@ from openai.types.chat import ChatCompletion
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.worker.topic_drift import MESSAGES_BETWEEN_DRIFT_CHECKS, NO_DRIFT_SENTINEL, TopicDriftDetector
+from zerver.worker.topic_drift import (
+    MESSAGES_BETWEEN_DRIFT_CHECKS,
+    NO_DRIFT_SENTINEL,
+    TopicDriftDetector,
+)
 
 
 def fake_chat_completion(content: str) -> ChatCompletion:
@@ -73,7 +77,7 @@ class TopicDriftEnqueueTestCase(ZulipTestCase):
 
 
 class TopicDriftWorkerTestCase(ZulipTestCase):
-    def _send_messages_and_get_event(self, topic_name: str, count: int) -> dict[str, object]:
+    def _send_messages_and_get_event(self, topic_name: str, count: int) -> dict[str, int | str]:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         self.subscribe(hamlet, "Verona")
@@ -92,9 +96,7 @@ class TopicDriftWorkerTestCase(ZulipTestCase):
         }
 
     def test_below_threshold_skips_llm_call(self) -> None:
-        event = self._send_messages_and_get_event(
-            "quiet topic", MESSAGES_BETWEEN_DRIFT_CHECKS - 1
-        )
+        event = self._send_messages_and_get_event("quiet topic", MESSAGES_BETWEEN_DRIFT_CHECKS - 1)
         worker = TopicDriftDetector()
         with (
             mock.patch.object(Completions, "create") as mock_create,
@@ -137,9 +139,7 @@ class TopicDriftWorkerTestCase(ZulipTestCase):
         # (e.g. a bulk import), whose jobs could otherwise all observe the
         # same MESSAGES_BETWEEN_DRIFT_CHECKS boundary and all pay for
         # their own LLM call.
-        event = self._send_messages_and_get_event(
-            "busy topic", MESSAGES_BETWEEN_DRIFT_CHECKS
-        )
+        event = self._send_messages_and_get_event("busy topic", MESSAGES_BETWEEN_DRIFT_CHECKS)
         fake_response = fake_chat_completion(NO_DRIFT_SENTINEL)
         with mock.patch.object(Completions, "create", return_value=fake_response) as mock_create:
             TopicDriftDetector().consume(event)
@@ -147,9 +147,7 @@ class TopicDriftWorkerTestCase(ZulipTestCase):
         mock_create.assert_called_once()
 
     def test_cost_limit_gating_skips_llm_call(self) -> None:
-        event = self._send_messages_and_get_event(
-            "expensive topic", MESSAGES_BETWEEN_DRIFT_CHECKS
-        )
+        event = self._send_messages_and_get_event("expensive topic", MESSAGES_BETWEEN_DRIFT_CHECKS)
         worker = TopicDriftDetector()
         with (
             self.settings(MAX_PER_USER_MONTHLY_AI_COST=0),
@@ -169,10 +167,12 @@ class TopicDriftWorkerTestCase(ZulipTestCase):
         mock_create.assert_not_called()
 
     def test_moved_topic_before_consume_skips(self) -> None:
-        from zerver.models import Message
-
+        # Simulates the message having moved to a different topic between
+        # when the job was enqueued and when the worker picks it up, by
+        # giving consume() an event whose recorded topic_name no longer
+        # matches the message's actual (unmodified) topic.
         event = self._send_messages_and_get_event("original name", MESSAGES_BETWEEN_DRIFT_CHECKS)
-        Message.objects.filter(id=event["message_id"]).update(subject="renamed elsewhere")
+        event = {**event, "topic_name": "a different topic entirely"}
 
         worker = TopicDriftDetector()
         with (

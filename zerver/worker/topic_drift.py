@@ -77,7 +77,8 @@ class TopicDriftDetector(QueueProcessingWorker):
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
         try:
-            message = Message.objects.get(id=event["message_id"])
+            with transaction.atomic(savepoint=False):
+                message = Message.objects.select_for_update(no_key=True).get(id=event["message_id"])
         except Message.DoesNotExist:
             # Message may have been deleted.
             return
@@ -174,7 +175,7 @@ class TopicDriftDetector(QueueProcessingWorker):
             "have consistently moved on to a different subject; a brief "
             "aside or a single off-topic message does not count as drift, "
             f'and you should prefer "{NO_DRIFT_SENTINEL}" when unsure. If '
-            f'the current title still fits, respond with exactly the '
+            f"the current title still fits, respond with exactly the "
             f'single word "{NO_DRIFT_SENTINEL}" and nothing else. '
             "Otherwise, respond with ONLY a concise replacement title (a "
             "few words, no punctuation, no quotes, no explanation)."
@@ -185,6 +186,13 @@ class TopicDriftDetector(QueueProcessingWorker):
             make_message(prompt),
         ]
 
+        # The enqueue in do_send_messages doesn't gate on this being
+        # configured, but the worker checks it before ever reaching this
+        # method (see the TOPIC_SUMMARIZATION_MODEL check in consume());
+        # that isn't visible to mypy across the queue boundary.
+        model = settings.TOPIC_SUMMARIZATION_MODEL
+        assert model is not None
+
         client = OpenAI(
             api_key=settings.TOPIC_SUMMARIZATION_API_KEY,
             base_url=settings.TOPIC_SUMMARIZATION_API_BASE,
@@ -193,7 +201,7 @@ class TopicDriftDetector(QueueProcessingWorker):
             max_retries=5,
         )
         response = client.chat.completions.create(
-            model=settings.TOPIC_SUMMARIZATION_MODEL,
+            model=model,
             messages=messages,
             **settings.TOPIC_SUMMARIZATION_PARAMETERS,
         )

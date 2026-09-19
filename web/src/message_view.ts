@@ -63,6 +63,7 @@ import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as submessage from "./submessage.ts";
+import * as topic_drift_ui from "./topic_drift_ui.ts";
 import * as topic_generator from "./topic_generator.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread from "./unread.ts";
@@ -289,6 +290,12 @@ function create_and_update_message_list(
     // From here on down, any calls to the narrow_state API will
     // reflect the requested narrow.
     message_lists.update_current_message_list(msg_list);
+    // Show or clear the topic-drift-suggestion banner for whatever topic
+    // (if any) we're now narrowed to. This needs to happen here, rather
+    // than in hashchange.ts, because in-app navigation (e.g. clicking a
+    // topic in the left sidebar) updates the URL hash internally and
+    // skips hashchange.ts's own handling of the resulting event.
+    topic_drift_ui.update_for_current_narrow();
     return {msg_list, restore_rendered_list};
 }
 
@@ -1048,6 +1055,7 @@ function navigate_to_anchor_message(opts: {
     function select_anchor_using_data(data: MessageListData): void {
         const msg_list = duplicate_current_msg_list_with_new_data(data);
         message_lists.update_current_message_list(msg_list);
+        topic_drift_ui.update_for_current_narrow();
         // `force_rerender` is required to render the new data.
         select_msg_id(message_list_data_to_target_message_id(data), {force_rerender: true});
     }

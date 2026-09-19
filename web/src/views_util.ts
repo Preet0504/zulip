@@ -21,6 +21,7 @@ import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
+import * as topic_drift_ui from "./topic_drift_ui.ts";
 import * as unread_ui from "./unread_ui.ts";
 
 export const FILTERS = {
@@ -104,6 +105,7 @@ export function show(opts: {
     $("#message_feed_container").hide();
     opts.$view.show();
     message_lists.update_current_message_list(undefined);
+    topic_drift_ui.update_for_current_narrow();
     opts.set_visible(true);
 
     // Hide selected elements in the left sidebar.
