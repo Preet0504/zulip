@@ -232,7 +232,7 @@ DEMO_ORG_DEADLINE_DAYS = 30
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
 
-TOPIC_SUMMARIZATION_MODEL = "llama-3.3-70b-versatile"
+TOPIC_SUMMARIZATION_MODEL = "openai/gpt-oss-120b"
 TOPIC_SUMMARIZATION_API_BASE = "https://api.groq.com/openai/v1"
 # Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
 # https://groq.com/pricing/
