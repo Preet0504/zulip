@@ -136,6 +136,20 @@ exports.fixtures = {
         alert_words: ["fire", "lunch"],
     },
 
+    message_recap_ready: {
+        type: "message_recap_ready",
+        recap_html: "<p>Test recap</p>",
+        conversations: [
+            {
+                conversation_type: "stream",
+                message_id: 42,
+                stream_id: 1,
+                stream_name: "Verona",
+                topic_name: "test topic",
+            },
+        ],
+    },
+
     attachment__add: {
         type: "attachment",
         op: "add",

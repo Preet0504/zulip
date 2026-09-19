@@ -232,6 +232,14 @@ export function highlight_recent_view(): void {
     }, 0);
 }
 
+export function highlight_recap_view(): void {
+    select_top_left_corner_item(".top_left_recap");
+
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}
+
 export function highlight_all_messages_view(): void {
     select_top_left_corner_item(".top_left_all_messages");
 

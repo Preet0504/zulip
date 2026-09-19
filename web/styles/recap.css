@@ -1,0 +1,30 @@
+#recap-view {
+    display: none;
+    height: 100%;
+    overflow-y: auto;
+    padding-top: var(--navbar-fixed-height);
+
+    .recap-container {
+        max-width: 80em;
+        margin: 0 auto;
+        padding: 1em 2em 3em;
+    }
+
+    .recap-loading,
+    .recap-error {
+        padding: 2em 0;
+        text-align: center;
+        color: var(--color-text-default);
+        opacity: 0.7;
+    }
+
+    .recap-links-header {
+        margin-top: 1.5em;
+        font-weight: 600;
+    }
+
+    .recap-conversation-links {
+        margin: 0.5em 0 0;
+        padding-left: 1.5em;
+    }
+}

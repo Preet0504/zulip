@@ -60,6 +60,7 @@ const reactions = mock_esm("../src/reactions", {
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
+const recap_ui = mock_esm("../src/recap_ui");
 const reload = mock_esm("../src/reload");
 const message_reminder = mock_esm("../src/message_reminder");
 const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
@@ -222,6 +223,18 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("message_recap_ready", ({override}) => {
+    const event = event_fixtures.message_recap_ready;
+    const stub = make_stub();
+    override(recap_ui, "handle_recap_ready", stub.f);
+    dispatch(event);
+
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("recap_html", "conversations");
+    assert.equal(args.recap_html, event.recap_html);
+    assert.deepEqual(args.conversations, event.conversations);
 });
 
 run_test("navigation_views", ({override}) => {

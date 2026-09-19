@@ -51,6 +51,7 @@ import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as recap_ui from "./recap_ui.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as reload from "./reload.ts";
@@ -120,6 +121,10 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            break;
+
+        case "message_recap_ready":
+            recap_ui.handle_recap_ready(event.recap_html, event.conversations);
             break;
 
         case "channel_folder":

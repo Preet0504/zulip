@@ -21,6 +21,7 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
+import * as recap_ui from "./recap_ui.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
@@ -176,6 +177,11 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
     // be #ABCD.
     const hash = window.location.hash.split("/");
 
+    // The Recap view isn't part of the existing inbox/recent-view
+    // mutual-hide wiring, so defensively hide it here whenever we're
+    // navigating to any other hash; its own "#recap" case re-shows it.
+    recap_ui.hide();
+
     const narrow_opts: message_view.ShowMessageViewOpts = {
         change_hash: false, // already set
         trigger: "hash change",
@@ -253,6 +259,9 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             break;
         case "#inbox":
             inbox_ui.show();
+            break;
+        case "#recap":
+            recap_ui.show();
             break;
         case "#all_messages":
             // "#all_messages" was renamed to "#feed" in 2024. Unlike

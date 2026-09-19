@@ -107,6 +107,7 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import * as recap_ui from "./recap_ui.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
@@ -587,6 +588,7 @@ export async function initialize_everything(state_data) {
     inbox_ui.initialize({
         hide_other_views: recent_view_ui.hide,
     });
+    recap_ui.initialize();
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize(user_settings.emojiset);

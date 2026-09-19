@@ -6,6 +6,7 @@ import type {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as people from "./people.ts";
+import * as recap_util from "./recap_util.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -21,6 +22,10 @@ export function compute_narrow_title(filter?: Filter): string {
         // Views without a message feed in the center pane.
         if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});
+        }
+
+        if (recap_util.is_visible()) {
+            return $t({defaultMessage: "Recap"});
         }
 
         assert(inbox_util.is_visible());
