@@ -1,80 +1,74 @@
-# Zulip overview
+# Zulip — AI features fork
 
-[Zulip](https://zulip.com) is an open-source organized team chat app with unique
-[topic-based threading][why-zulip] that combines the best of email and chat to
-make remote work productive and delightful. Fortune 500 companies, [leading open
-source projects][rust-case-study], and thousands of other organizations use
-Zulip every day. Zulip is the only [modern team chat app][features] that is
-designed for both live and asynchronous conversations.
+This is a fork of [Zulip](https://zulip.com), the open-source team chat
+app, extended with two LLM-powered features built as a course
+assignment:
 
-Zulip is built by a distributed community of developers from all around the
-world, with 99+ people who have each contributed 100+ commits. With
-over 1,500 contributors merging over 500 commits a month, Zulip is the
-largest and fastest growing open source team chat project.
+- **Message Recap** — a "Recap" entry in the left sidebar that
+  generates an AI summary of all your unread conversations, with
+  links back to each one.
+- **Topic Title Improver** — a background check that detects when an
+  active conversation has drifted away from its topic title, and
+  shows a banner suggesting a better one, with one-click rename or
+  dismiss.
 
-Come find us on the [development community chat](https://zulip.com/development-community/)!
+For engineering details on both features (design decisions, file
+pointers, tradeoffs), see
+[`implementation.md`](https://github.com/Preet0504/zulip/blob/main/implementation.md).
 
-[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
-[![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
-[![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
-[![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
-[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-[![Bluesky](https://img.shields.io/badge/bluesky-@zulip.bsky.social-blue.svg?style=flat)](https://bsky.app/profile/zulip.bsky.social)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
+## Setup
 
-[mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
-[why-zulip]: https://zulip.com/why-zulip/
-[rust-case-study]: https://zulip.com/case-studies/rust/
-[features]: https://zulip.com/features/
+The development environment is the standard Zulip one, documented in
+full at
+[`docs/development/setup-recommended.md`](https://github.com/Preet0504/zulip/blob/main/docs/development/setup-recommended.md).
+On Windows, that means WSL 2; on macOS/Linux, Vagrant with Docker.
+Condensed for the common case (from inside your Zulip checkout):
 
-## Getting started
+```console
+$ ./tools/provision
+$ source .venv/bin/activate
+$ ./tools/run-dev
+```
 
-- **Contributing code**. Check out our [guide for new
-  contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to get started. We have invested in making Zulip’s code highly
-  readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 185K words of documentation for Zulip
-  contributors.
+Then visit the URL printed in the terminal (typically
+`http://localhost:9991/`) and log in with one of the seeded dev users
+(e.g., `hamlet@zulip.com`, any password).
 
-- **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
-  [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
-  We'd love to hear from you, whether you've been using Zulip for years, or are just
-  trying it out for the first time.
+## Configuring the LLM API key
 
-- **Checking Zulip out**. The best way to see Zulip in action is to [drop
-  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
-  community (no account required). We also recommend reading about Zulip's
-  [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
+Both features call an OpenAI-compatible chat completion API — the dev
+environment is configured for [Groq](https://groq.com), which has a
+free tier.
 
-- **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
-  Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
-  Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+1. Get an API key from the [Groq console](https://console.groq.com/keys).
+2. Open `zproject/dev-secrets.conf` and add it under the `[secrets]`
+   section:
 
-- **Using Zulip without setting up a server**. Learn about [Zulip
-  Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
-  Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
-  organizations, including [fellow open-source
-  projects](https://zulip.com/for/open-source/).
+   ```ini
+   topic_summarization_api_key = <your key>
+   ```
 
-- **Participating in [outreach
-  programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
-  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/).
+3. If `run-dev` is already running, restart it so the new setting is
+   picked up.
 
-- **Supporting Zulip**. Learn about all the ways you can [support
-  Zulip](https://zulip.com/help/support-zulip-project), including contributing
-  financially, and helping others discover it.
+`zproject/dev-secrets.conf` is gitignored and is never committed —
+this is the only manual step required to get both AI features
+working; everything else (which model, cost accounting, per-user
+monthly budget) is preconfigured in `zproject/dev_settings.py`.
 
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
-[Mastodon](https://fosstodon.org/@zulip), and [X](https://x.com/zulip).
+No new Python or JavaScript dependencies were added beyond what
+upstream Zulip's topic-summarization feature already required
+(`./tools/provision` installs everything).
 
-Zulip is distributed under the
-[Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
+## Running the tests
+
+```console
+$ ./tools/test-backend zerver.tests.test_message_recap zerver.tests.test_topic_drift
+$ ./tools/test-js-with-node
+```
+
+## License
+
+Distributed under the
+[Apache 2.0](https://github.com/Preet0504/zulip/blob/main/LICENSE)
+license, same as upstream Zulip.
