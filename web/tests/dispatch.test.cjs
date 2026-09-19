@@ -61,6 +61,7 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const recap_ui = mock_esm("../src/recap_ui");
+const topic_drift_ui = mock_esm("../src/topic_drift_ui");
 const reload = mock_esm("../src/reload");
 const message_reminder = mock_esm("../src/message_reminder");
 const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
@@ -235,6 +236,22 @@ run_test("message_recap_ready", ({override}) => {
     const args = stub.get_args("recap_html", "conversations");
     assert.equal(args.recap_html, event.recap_html);
     assert.deepEqual(args.conversations, event.conversations);
+});
+
+run_test("topic_drift_suggestion", ({override}) => {
+    const event = event_fixtures.topic_drift_suggestion;
+    const stub = make_stub();
+    override(topic_drift_ui, "handle_suggestion", stub.f);
+    dispatch(event);
+
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("suggestion");
+    assert.deepEqual(args.suggestion, {
+        message_id: event.message_id,
+        stream_id: event.stream_id,
+        topic_name: event.topic_name,
+        suggested_topic_name: event.suggested_topic_name,
+    });
 });
 
 run_test("navigation_views", ({override}) => {

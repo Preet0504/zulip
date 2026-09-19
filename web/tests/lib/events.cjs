@@ -150,6 +150,14 @@ exports.fixtures = {
         ],
     },
 
+    topic_drift_suggestion: {
+        type: "topic_drift_suggestion",
+        message_id: 42,
+        stream_id: 1,
+        topic_name: "old topic",
+        suggested_topic_name: "new topic",
+    },
+
     attachment__add: {
         type: "attachment",
         op: "add",

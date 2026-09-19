@@ -32,6 +32,7 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as topic_drift_ui from "./topic_drift_ui.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_profile from "./user_profile.ts";
@@ -606,6 +607,10 @@ function hashchanged(
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload, restore_selected_id);
     browser_history.state.changing_hash = false;
+    // Show or clear the topic-drift-suggestion banner for whatever topic
+    // (if any) we ended up narrowed to; narrow_state reflects the new
+    // narrow only once do_hashchange_normal has returned.
+    topic_drift_ui.update_for_current_narrow();
     return ret;
 }
 

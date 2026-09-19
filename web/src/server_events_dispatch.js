@@ -96,6 +96,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as topic_drift_ui from "./topic_drift_ui.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -125,6 +126,15 @@ export function dispatch_normal_event(event) {
 
         case "message_recap_ready":
             recap_ui.handle_recap_ready(event.recap_html, event.conversations);
+            break;
+
+        case "topic_drift_suggestion":
+            topic_drift_ui.handle_suggestion({
+                message_id: event.message_id,
+                stream_id: event.stream_id,
+                topic_name: event.topic_name,
+                suggested_topic_name: event.suggested_topic_name,
+            });
             break;
 
         case "channel_folder":

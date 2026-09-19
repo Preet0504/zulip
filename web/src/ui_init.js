@@ -159,6 +159,7 @@ import * as theme from "./theme.ts";
 import * as thumbnail from "./thumbnail.ts";
 import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
+import * as topic_drift_ui from "./topic_drift_ui.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
 import * as transmit from "./transmit.ts";
@@ -589,6 +590,7 @@ export async function initialize_everything(state_data) {
         hide_other_views: recent_view_ui.hide,
     });
     recap_ui.initialize();
+    topic_drift_ui.initialize();
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
     emojisets.initialize(user_settings.emojiset);
